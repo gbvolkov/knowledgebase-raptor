@@ -1,0 +1,5 @@
+.venv
+.vscode
+**/__pycache__
+faiss_index
+test_data

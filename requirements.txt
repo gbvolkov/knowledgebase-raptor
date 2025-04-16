@@ -1,0 +1,15 @@
+langchain_core
+langchain
+langchain_community
+
+langchain-huggingface
+langchain_openai
+
+faiss-cpu
+unstructured 
+PyPDF2
+
+#umap
+umap-learn
+
+pandas
