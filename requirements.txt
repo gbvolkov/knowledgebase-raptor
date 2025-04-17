@@ -1,15 +1,28 @@
+pandas
+torch
+transformers
+
 langchain_core
 langchain
 langchain_community
+langchain-experimental
+open_clip_torch
 
 langchain-huggingface
 langchain_openai
 
 faiss-cpu
+
 unstructured 
+unstructured[image]
+unstructured[md]
 PyPDF2
+pymupdf
+Pillow
+#libmagic
+#python-magic
+#python-magic-bin
+#python-magic
 
 #umap
 umap-learn
-
-pandas

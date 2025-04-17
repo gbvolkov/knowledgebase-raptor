@@ -22,3 +22,10 @@ CLUSTER_THRESHOLD = 0.1
 CLUSTER_DIM = 10
 RECURSION_LEVELS = 3
 FAISS_INDEX_PATH = "faiss_index"
+
+# Root data directory
+RAW_DATA_DIR = os.getenv("RAW_DATA_DIR", "test_data/Notion0code")  
+
+# Where to save/load the FAISS index
+INDEX_DIR = os.getenv("INDEX_DIR", "multi_index")  
+IMAGE_DATA_DIR = RAW_DATA_DIR
