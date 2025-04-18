@@ -6,8 +6,11 @@ from typing import List
 from langchain_experimental.open_clip import OpenCLIPEmbeddings
 from langchain_community.vectorstores.faiss import FAISS
 from langchain.retrievers import EnsembleRetriever
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import CrossEncoderReranker
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
-from config import INDEX_DIR, FAISS_INDEX_PATH
+from config import INDEX_DIR, FAISS_INDEX_PATH, RERANKING_MODEL
 from vector_store.faiss_store import load_faiss_index, query_faiss_index
 
 
@@ -83,15 +86,22 @@ if __name__ == "__main__":
     #args = parser.parse_args()
     image_vs = load_image_index()
     text_vs = load_faiss_index(FAISS_INDEX_PATH)
+    chats_vs = load_faiss_index("chats_index")
 
     k = 5
     ensemble = EnsembleRetriever(
-        retrievers=[text_vs.as_retriever(search_kwargs={"k": k}), image_vs.as_retriever(search_kwargs={"k": k})],
-        weights=[0.7, 0.3]                  # adjust to favor text vs. images
+        retrievers=[text_vs.as_retriever(search_kwargs={"k": k}), chats_vs.as_retriever(search_kwargs={"k": k})],
+        weights=[0.5, 0.5]                  # adjust to favor text vs. images
     )
-    query = "пример кода на python"
+    reranker_model = HuggingFaceCrossEncoder(model_name=RERANKING_MODEL)
+    RERANKER = CrossEncoderReranker(model=reranker_model, top_n=3)
+    retriever = ContextualCompressionRetriever(
+            base_compressor=RERANKER, base_retriever=ensemble
+            )
 
-    results = ensemble.get_relevant_documents(query)
+    query = "Когда вебминар"
+
+    results = retriever.get_relevant_documents(query, search_kwargs={"k": k})
     for doc in results:
         if doc.metadata.get("type") == "image":
             print(doc.metadata["source"])

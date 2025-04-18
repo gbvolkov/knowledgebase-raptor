@@ -4,5 +4,7 @@
 faiss_index
 image_index
 multi_index
+chats_index
 test_data
+data
 ~*

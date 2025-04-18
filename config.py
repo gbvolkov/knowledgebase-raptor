@@ -17,11 +17,12 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 DOCUMENT_DIR = "test_data"
 EMBEDDING_MODEL_NAME = "intfloat/multilingual-e5-large"
 CHUNK_SIZE = 2000
-CHUNK_OVERLAP = 0
+CHUNK_OVERLAP = 250
 CLUSTER_THRESHOLD = 0.1
 CLUSTER_DIM = 10
 RECURSION_LEVELS = 3
 FAISS_INDEX_PATH = "faiss_index"
+RERANKING_MODEL=os.environ.get('RERANKING_MODEL') or '/models/bge-reranker-large'
 
 # Root data directory
 RAW_DATA_DIR = os.getenv("RAW_DATA_DIR", "test_data/Notion0code")  
