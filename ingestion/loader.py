@@ -4,8 +4,24 @@ from langchain.docstore.document import Document
 from langchain_community.document_loaders import (
     TextLoader, 
     UnstructuredPDFLoader, 
-    UnstructuredWordDocumentLoader
+    UnstructuredWordDocumentLoader,
+    UnstructuredPowerPointLoader,
+    UnstructuredExcelLoader,
+    UnstructuredImageLoader,
+    AssemblyAIAudioTranscriptLoader
 )
+from pydub import AudioSegment
+
+
+os.environ["ASSEMBLYAI_API_KEY"] = "fad8b29b94a6494bbf9fd05ee9083ea2"
+
+
+def convert_audio_to_wav(input_file, output_file, audio_type):
+    """
+    Converts an M4A (or similar) file to WAV format.
+    """
+    audio = AudioSegment.from_file(input_file, format=audio_type)
+    audio.export(output_file, format='wav')
 
 def load_documents(directory_path: str) -> list[Document]:
     """
@@ -34,12 +50,32 @@ def load_documents(directory_path: str) -> list[Document]:
             ext = os.path.splitext(filename)[1].lower()
             try:
                 # Choose the loader based on file extension
-                if ext in ['.txt', '.md']:
+                if ext in ['.txt', '.md', '.py']:
                     loader = TextLoader(full_path, encoding="utf8")
                 elif ext == '.pdf':
                     loader = UnstructuredPDFLoader(full_path)
                 elif ext in ['.docx', '.doc']:
                     loader = UnstructuredWordDocumentLoader(full_path)
+                elif ext in ['.pptx', '.ppt']:
+                    # PowerPoint loader: returns a single Document by default
+                    loader = UnstructuredPowerPointLoader(full_path, mode="single")
+                elif ext in ['.xlsx', '.xls']:
+                    # Excel loader: returns a single Document by default
+                    loader = UnstructuredExcelLoader(full_path, mode="single")
+                elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif']:
+                    loader = UnstructuredImageLoader(full_path, mode="single")
+                elif ext in ['.mp4', '.mov', '.avi']:
+                    wav_name = filename
+                    name, ext = os.path.splitext(filename)
+                    ext = ext.replace('.', '')
+                    wav_name = f"temp/{name}.wav"
+
+                    convert_audio_to_wav(full_path, wav_name, ext)
+                    import assemblyai
+                    config = assemblyai.TranscriptionConfig(
+                        language_code='ru'
+                    )
+                    loader = AssemblyAIAudioTranscriptLoader(wav_name, config=config)
                 else:
                     print(f"Unsupported file type {ext} for file {filename}")
                     continue
@@ -55,3 +91,9 @@ def load_documents(directory_path: str) -> list[Document]:
             except Exception as e:
                 print(f"Error loading file {filename}: {e}")
     return documents
+
+
+if __name__ == "__main__":
+    DOCUMENT_DIR = "data"
+    documents = load_documents(DOCUMENT_DIR)
+    print(f"Loaded {len(documents)} documents.")

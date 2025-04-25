@@ -16,9 +16,17 @@ faiss-cpu
 unstructured 
 unstructured[image]
 unstructured[md]
+unstructured[pptx]
+unstructured[xlsx]
+#python-magic 
+#python-pptx
+#openpyxl
+assemblyai
+
 PyPDF2
 pymupdf
 Pillow
+pydub
 #libmagic
 #python-magic
 #python-magic-bin
