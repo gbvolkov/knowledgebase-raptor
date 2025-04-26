@@ -11,9 +11,7 @@ from langchain_community.document_loaders import (
     AssemblyAIAudioTranscriptLoader
 )
 from pydub import AudioSegment
-
-
-os.environ["ASSEMBLYAI_API_KEY"] = "fad8b29b94a6494bbf9fd05ee9083ea2"
+import config
 
 
 def convert_audio_to_wav(input_file, output_file, audio_type):

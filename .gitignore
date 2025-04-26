@@ -5,6 +5,7 @@ faiss_index
 image_index
 multi_index
 chats_index
+notion_index
 test_data
 data
 data_full
