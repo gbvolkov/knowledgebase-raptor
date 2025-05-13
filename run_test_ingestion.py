@@ -1,6 +1,6 @@
 # run_test_ingestion.py
 import os
-from ingestion.loader import load_documents_from_directory
+from loader import load_documents_from_directory
 from ingestion.chunker import chunk_documents
 
 # Specify the path to your test folder

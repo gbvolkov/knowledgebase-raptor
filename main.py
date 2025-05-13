@@ -1,12 +1,12 @@
 # main.py
-from ingestion.loader import load_documents
+from loader import load_documents
 from ingestion.chunker import chunk_documents
 from raptor.tree_builder import recursive_embed_cluster_summarize
 from vector_store.faiss_store import build_faiss_index, save_faiss_index
 from config import DOCUMENT_DIR, FAISS_INDEX_PATH
 
 DOCUMENT_DIR = "data"
-FAISS_INDEX_PATH = "notion_index"
+FAISS_INDEX_PATH = "index/notion_index"
 def main():
     # Recursively load documents from the local test_data folder.
     print("Loading documents from:", DOCUMENT_DIR)

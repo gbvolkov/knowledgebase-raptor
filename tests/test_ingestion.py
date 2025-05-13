@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-from ingestion.loader import load_documents_from_directory
+from loader import load_documents_from_directory
 from ingestion.chunker import chunk_documents
 from langchain.docstore.document import Document
 
