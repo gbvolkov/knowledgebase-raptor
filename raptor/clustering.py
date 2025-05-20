@@ -10,11 +10,11 @@ def global_cluster_embeddings(embeddings: np.ndarray, dim: int, n_neighbors: Opt
     if n_neighbors is None:
         n_neighbors = int((len(embeddings) - 1) ** 0.5)
     reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=dim, metric=metric, random_state=RANDOM_SEED)
-    return reducer.fit_transform(embeddings)
+    return reducer.fit_transform(embeddings) # type: ignore
 
 def local_cluster_embeddings(embeddings: np.ndarray, dim: int, num_neighbors: int = 10, metric: str = "cosine") -> np.ndarray:
     reducer = umap.UMAP(n_neighbors=num_neighbors, n_components=dim, metric=metric, random_state=RANDOM_SEED)
-    return reducer.fit_transform(embeddings)
+    return reducer.fit_transform(embeddings) # type: ignore
 
 def get_optimal_clusters(embeddings: np.ndarray, max_clusters: int = 50) -> int:
     max_clusters = min(max_clusters, len(embeddings))

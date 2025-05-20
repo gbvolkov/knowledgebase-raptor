@@ -53,7 +53,10 @@ def embed_cluster_summarize_texts(texts: List[str], level: int) -> Tuple[pd.Data
     for i in all_clusters:
         df_cluster = expanded_df[expanded_df["cluster"] == i]
         formatted_txt = fmt_txt(df_cluster)
-        summaries.append(summarize_text(formatted_txt))
+        print(f">>>Summarizing {formatted_txt[:64]}::{len(formatted_txt)}")
+        summary = summarize_text(formatted_txt)
+        summaries.append(summary)
+        print(f"<<<Tolal suummaries: {len(summaries)} Summary ready {summary[:64]}::{len(summary)}")
     df_summary = pd.DataFrame({
         "summaries": summaries,
         "level": [level] * len(summaries),

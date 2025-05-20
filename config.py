@@ -31,4 +31,4 @@ RAW_DATA_DIR = os.getenv("RAW_DATA_DIR", "test_data/Notion0code")
 INDEX_DIR = os.getenv("INDEX_DIR", "multi_index")  
 IMAGE_DATA_DIR = RAW_DATA_DIR
 
-ASSEMBLYAI_API_KEY = os.environ["ASSEMBLYAI_API_KEY"]
+ASSEMBLYAI_API_KEY = os.environ.get('ASSEMBLYAI_API_KEY') or "ND"
