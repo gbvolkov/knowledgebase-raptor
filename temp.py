@@ -40,6 +40,10 @@ def docx_to_markdown(docx_path: str | Path, md_path: str | Path | None = None) -
 
 # ----- usage -----
 if __name__ == "__main__":
-    md = docx_to_markdown("data/nero_kb_clean.docx", "data/nero_kb_clean.md")
+    import os
+    for fname in os.listdir("data/"):
+        name, ext = os.path.splitext(fname)
+        if ext == ".docx":
+            md = docx_to_markdown(f"data/{fname}", f"data/{name}.md")
     print("Converted to Markdown:")
     print(md[:500], "…")   # preview first 500 characters

@@ -1,7 +1,8 @@
 # faiss_store.py
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents.base import Document
 from embeddings.embedder import get_embedding_model
-from typing import List
+from typing import List, Any
 
 def build_faiss_index(texts: List[str]):
     """
@@ -10,6 +11,14 @@ def build_faiss_index(texts: List[str]):
     embed_model = get_embedding_model()
     # Use the FAISS wrapper from LangChain to build the vector store.
     return FAISS.from_texts(texts, embed_model)
+
+def build_faiss_index_from_docs(docs: list[Document]):
+    """
+    Builds a FAISS index from the given texts using the HuggingFace embedding model.
+    """
+    embed_model = get_embedding_model()
+    # Use the FAISS wrapper from LangChain to build the vector store.
+    return FAISS.from_documents(docs, embed_model)
 
 def save_faiss_index(index, path: str):
     """
