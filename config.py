@@ -21,7 +21,7 @@ CHUNK_OVERLAP = 250
 CLUSTER_THRESHOLD = 0.1
 CLUSTER_DIM = 10
 RECURSION_LEVELS = 3
-FAISS_INDEX_PATH = "neuro_index"
+FAISS_INDEX_PATH = "index/neuro_index"
 RERANKING_MODEL=os.environ.get('RERANKING_MODEL') or '/models/bge-reranker-large'
 
 # Root data directory

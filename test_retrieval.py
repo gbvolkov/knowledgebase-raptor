@@ -7,7 +7,7 @@ def test_vectorstore_retrieval():
     index = load_faiss_index(FAISS_INDEX_PATH)
     
     # Define your query for testing.
-    query_text = "Как получить zerocoins?"
+    query_text = "какие жк у вас в продаже?"
     print("Query:", query_text)
     
     # Run a similarity search on the vector store. k determines the number of results.
