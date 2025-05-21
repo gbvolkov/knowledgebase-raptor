@@ -18,6 +18,7 @@ unstructured[image]
 unstructured[md]
 unstructured[pptx]
 unstructured[xlsx]
+unstructured[docx]
 #python-magic 
 #python-pptx
 #openpyxl
