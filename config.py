@@ -15,7 +15,7 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 # config.py
 DOCUMENT_DIR = "data"
-EMBEDDING_MODEL_NAME = "intfloat/multilingual-e5-large"
+EMBEDDING_MODEL_NAME=os.environ.get('EMBEDDING_MODEL_NAME') or "intfloat/multilingual-e5-large"
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 250
 CLUSTER_THRESHOLD = 0.1
@@ -32,3 +32,5 @@ INDEX_DIR = os.getenv("INDEX_DIR", "multi_index")
 IMAGE_DATA_DIR = RAW_DATA_DIR
 
 ASSEMBLYAI_API_KEY = os.environ.get('ASSEMBLYAI_API_KEY') or "ND"
+
+
