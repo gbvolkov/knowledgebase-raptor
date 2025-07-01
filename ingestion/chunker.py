@@ -3,10 +3,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
 from langchain.docstore.document import Document
 from ingestion import utils
-from config import CHUNK_SIZE, CHUNK_OVERLAP
+from config import CHUNK_SIZE, CHUNK_OVERLAP, EMBEDDING_MODEL_NAME
 
 def chunk_text(text: str) -> List[str]:
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        #model_name=EMBEDDING_MODEL_NAME,
         chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
     )
     return splitter.split_text(text)
