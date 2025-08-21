@@ -6,8 +6,8 @@ from vector_store.faiss_store import build_faiss_index_from_docs, save_faiss_ind
 from config import DOCUMENT_DIR, FAISS_INDEX_PATH
 import pickle
 
-DOCUMENT_DIR = "data"
-FAISS_INDEX_PATH = "index/kb_index"
+DOCUMENT_DIR = "data/digitme"
+FAISS_INDEX_PATH = "index/digitme_index"
 def main():
     # Recursively load documents from the local test_data folder.
     print("Loading documents from:", DOCUMENT_DIR)
