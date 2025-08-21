@@ -11,7 +11,7 @@ def test_vectorstore_retrieval():
     print("Query:", query_text)
     
     # Run a similarity search on the vector store. k determines the number of results.
-    results = query_faiss_index(index, query_text, k=15)
+    results = query_faiss_index(index, query_text, k=5)
     
     # Print the retrieved document contents.
     for i, doc in enumerate(results, 1):
