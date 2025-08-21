@@ -11,12 +11,13 @@ def test_vectorstore_retrieval():
     print("Query:", query_text)
     
     # Run a similarity search on the vector store. k determines the number of results.
-    results = query_faiss_index(index, query_text, k=5)
+    results = query_faiss_index(index, query_text, k=15)
     
     # Print the retrieved document contents.
     for i, doc in enumerate(results, 1):
         print(f"\nResult {i}:")
-        print(doc.metadata["source"])
+        print(doc.metadata["id"])
+        print(doc.metadata["type"])
         print(doc.page_content)
         print("-" * 80)
 

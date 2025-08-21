@@ -1,122 +1,26 @@
-from typing import List
+from typing import List, Any
 from enum import Enum, EnumMeta
+
+import config
+
 
 import os, pprint, json
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
 
 from langchain_community.document_loaders import UnstructuredWordDocumentLoader
 from langchain.docstore.document import Document
 
-import config
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-#from llm import llm
-model = ChatOpenAI(temperature=0, model="gpt-4.1-nano")
-#model = llm
-# Define a simple summarization prompt template.
-_TEMPLATE = """Here is a term in Russian:
 
-{context}
-
-Please provide a mostly close translation to English from the list of terms:
-
-#LIST OF TERMS:
-{terms}
-#END OF LIST OF TERMS:
-
-Return only one term from the list of terms without any other phrases and modifications.
-If there are no close translations, return context itself with no translations.
-"""
-prompt = ChatPromptTemplate.from_template(_TEMPLATE)
-chain = prompt | model | StrOutputParser()
-
-from functools import lru_cache
-
-@lru_cache(maxsize=5000, typed=True)
-def get_synonim(term: str)-> str:
-    term = term.replace("/", " или ")
-    return chain.invoke({"context": term, "terms": ";".join(valid_terms)})
-
-
-valid_terms = [
-    "general info"
-    "project",
-    "it system",
-    "task number",
-    "task date",
-    "initiator",
-    "department of initiator",
-    "curator",
-    "executor",
-    "terms and definitions", 
-    #"term", 
-    "abbreviation", 
-    "description",
-    "list of problems",
-    "business goals",
-    "current and target models",
-    "'as is' process description",
-    "'to be' process description",
-    "interested parties",
-    "number",
-    "responsibility area",
-    "regulatory changes",
-    "business requirements",
-    "description",
-    "functional requirements",
-    "use cases",
-    "user action",
-    "system action",
-    "non-functional requirements",
-    "risks",
-    "risk probability",
-    "risk mitigation",
-    "limitations",
-]
+from find_match import get_synonim
 
 
 class StrEnumMeta(EnumMeta):
     def __getattribute__(cls, name):
         obj = super().__getattribute__(name)
-        if isinstance(obj, cls):
-            return get_synonim(obj.value)
-        else:
-            return obj
-
-#class TAGS(Enum, metaclass = StrEnumMeta):
-#    START_OF_CONTENT    = "Общая информация"
-#    METADATA            = "Сведения о задаче"
-#    TND                 = "Термины и определения"
-#    PROBLEMS            = "Перечень решаемых проблем"
-#    GOALS               = "Бизнес-цели"
-#    MODELS              = "Текущая и целевая модели"
-#    ASIS                = "Описание процесса «as is»"
-#    TOBE                = "Описание процесса «to be»"
-#    PARTIES             = "Заинтересованные стороны"
-#    REG_CHANGES         = "Изменения в ЛНА и пользовательских инструкциях"
-#    BUSINESS_REQS       = "Бизнес-требования"
-#    FUNC_REQS           = "Функциональные требования"
-#    USCASES             = "Сценарии использования"
-#    NONFUNC_REQS        = "Нефункциональные требования"
-#    RISKS               = "Риски"
-#    LIMITATIONS         = "Ограничения"
-#    ATTACHMENTS         = "Приложения"
-#
-#    def __eq__(self, other):
-#        if isinstance (other, str):
-#            return self.value.lower() == other.strip().lower()
-#        elif isinstance (other, TAGS):
-#            return self.value.lower() == other.value.lower()
-#        return self.value.lower() == str(other).strip().lower()
-#    
-#    def __ne__(self, other):
-#        return not self.__eq__(self, other)
+        return get_synonim(obj.value) if isinstance(obj, cls) else obj
 
 class TAGS(Enum, metaclass = StrEnumMeta):
     START_OF_CONTENT    = "Общая информация"
@@ -225,8 +129,7 @@ def parse_bfr(bfr_path: str)-> dict:
             if topic != "":
                 topics[topic] = table_content
             #pprint.pprint(table_content, indent=4)
-        else:
-            pass
+        #else:
             #print(f"OTHER: {doc.metadata["category"]}: {content}")
     return topics
 
@@ -242,7 +145,7 @@ def get_tnd_content(doc: dict)-> str:
     rows = []
     terms = doc.get(TAGS.TND, [])
     for idx, term in enumerate(terms):
-        row = f"{idx+1}. {term["abbreviation"]}: {term["terms and definitions"]}; {term["description"]}"
+        row = f"{idx+1}. {term["abbreviation"]}: {term["term"]}; {term["description"]}"
         rows.append(row)
     return "##Термины и определения\n" + "\n".join(rows)
 
@@ -254,16 +157,9 @@ def get_business_goals_content(doc: dict)-> str:
     rows = get_enumerated_content(doc, TAGS.GOALS)
     return "##Бизнес-цели\n" + "\n".join(rows)
 
-def get_models_content(doc: dict)-> str:
-    models_rows = []
-    asis_rows = []
-    tobe_rows = []
+def get_models_content(doc: dict) -> str:
     models_rows = get_enumerated_content(doc, TAGS.MODELS)
-    asis_rows = get_enumerated_content(doc, TAGS.ASIS)
-    tobe_rows = get_enumerated_content(doc, TAGS.TOBE)
-
-    content= "##Текущая и целевая модели\n" + "\n".join(models_rows) + "\n#Описание процесса «as is»\n" + "\n".join(asis_rows) + "\n#Описание процесса to be»\n" + "\n".join(tobe_rows)
-    return content
+    return (f"##Текущая и целевая модели\n{"\n".join(models_rows)}")
 
 def get_parties_content(doc: dict)-> str:
     rows = []
@@ -300,10 +196,11 @@ def build_br_documents(document: dict, metadata: dict)-> List[Document]:
     metadata["type"] = "br" #business requirement
     documents: List[Document] = []
     for doc in br_docs:
-        id = doc["ID"]
-        requirement = doc["description"].strip()
+        if isinstance(doc, dict):
+            doc_id = doc["ID"]
+            requirement = doc["description"].strip()
         if len(requirement) > 0:
-            content = f"Требование {id}: {requirement}"
+            content = f"Требование {doc_id}: {requirement}"
             documents.append(Document(content, metadata=metadata))
 
     return documents
@@ -312,13 +209,15 @@ def build_fr_documents(document: dict, metadata: dict)-> List[Document]:
     br_docs = document.get(TAGS.FUNC_REQS, [])
     metadata["type"] = "fr" #functional requiremnet
     documents: List[Document] = []
+    idx = 1
     for doc in br_docs:
-        id = doc["ID"]
-        requirement = doc["description"].strip()
-        #br_no = doc["ID BR"].strip()
-        if len(requirement) > 0:
-            content = f"Требование {id}: {requirement}." # Относится к бизнес-требованию: {br_no}"
-            documents.append(Document(content, metadata=metadata))
+        if isinstance(doc, dict):
+            doc_id = doc["ID"]
+            requirement = doc["description"].strip()
+            #br_no = doc["ID BR"].strip()
+            if len(requirement) > 0:
+                content = f"Требование {doc_id}: {requirement}." # Относится к бизнес-требованию: {br_no}"
+                documents.append(Document(content, metadata=metadata))
 
     return documents
 
@@ -328,38 +227,49 @@ def build_uc_documents(document: dict, metadata: dict)-> List[Document]:
     metadata["type"] = "uc" # use case
     documents: List[Document] = []
     for doc in br_docs:
-        id = doc["№"]
+        doc_id = doc["№"]
         user_act = doc["user action"].strip()
         system_act = doc["system action"].strip()
         if len(user_act) > 0:
-            content = f"#{id}. Действие пользователя: {user_act}.\nРеакция системы: {system_act}"
+            content = f"#{doc_id}. Действие пользователя: {user_act}.\nРеакция системы: {system_act}"
             documents.append(Document(content, metadata=metadata))
     return documents
 
-def build_risks_documents(document: dict, metadata: dict)-> List[Document]:
+def build_risks_documents(document: dict, metadata: dict) -> List[Document]:
     br_docs = document.get(TAGS.RISKS, [])
     metadata["type"] = "rm" #risc matrix
     documents: List[Document] = []
     for doc in br_docs:
         risk = doc["risks"].strip()
-        probability = doc["risk probability"]
-        mitigation = doc["risk mitigation"]
         if len(risk) > 0:
+            probability = doc["risk probability"]
+            mitigation = doc["risk mitigation"]
             content = f"Описание риска: {risk}.\nВероятность наступления: {probability}\nСпособы митигации: {mitigation}"
             documents.append(Document(content, metadata=metadata))
     return documents
 
+def build_asid_document(doc: dict, metadata: dict) -> str:
+    asis_rows = get_enumerated_content(doc, TAGS.ASIS)
+    content = f"##Описание процесса «as is»\n{"\n".join(asis_rows)}"
+    return [Document(content, metadata=metadata)]
 
-def build_documents(document: dict)-> Document:
+def build_tobe_document(doc: dict, metadata: dict) -> str:
+    tobe_rows = get_enumerated_content(doc, TAGS.TOBE)
+    content = f"##Описание процесса to be»\n{"\n".join(tobe_rows)}"
+    return [Document(content, metadata=metadata)]
+
+
+def build_documents(document: dict) -> Document:
 
     title = document["Title"]
-    metadata = {}
-    metadata["type"] = "head"
-    metadata["id"] = document["ID"]
-    metadata["title"] = title
     meta = document[TAGS.METADATA][0]
 
-    metadata["project"] = meta.get("project", "")
+    metadata = {
+        "type": "head",
+        "id": document["ID"],
+        "title": title,
+        "project": meta.get("project", ""),
+    }
     metadata["systems"] = meta.get("it system", "")
     metadata["task_no"] = meta.get("task number", "")
     metadata["task_date"] = meta.get("task date", "")
@@ -378,32 +288,44 @@ def build_documents(document: dict)-> Document:
     limitations_content = get_limitations_content(document)
 
     content = f"{title}\n\n{tnd_content}\n{problems_content}\n{business_goals}\n{models_content}\n{parties_content}\n{changes_content}\n{non_funq_reqs_content}\n{limitations_content}"
+
     head_document = Document(content, metadata=metadata)
     risk_documents = build_risks_documents(document, metadata)
     br_documents = build_br_documents(document, metadata)
     fr_documents = build_fr_documents(document, metadata)
     uc_documents = build_uc_documents(document, metadata)
+    asis_documents = build_asid_document(document, metadata)
+    tobe_documents = build_tobe_document(document, metadata)
 
-    return [head_document] + risk_documents + br_documents + fr_documents + uc_documents
+    return [head_document] + risk_documents + br_documents + fr_documents + uc_documents + asis_documents + tobe_documents
 
 
 VALID_EXT = [".doc", ".docx"]
-def build_documents_from_folder(doc_path: Path) -> List[Document]:
+def load_documents(doc_path: Any) -> List[Document]:
+
+    if not isinstance(doc_path, Path):
+        doc_path = Path(doc_path)
+
     documents: List[Document] = []
     
     #doc_path = Path(path)
     for file_path in doc_path.iterdir():
+        #print(f"===========>{file_path}")
         if not file_path.is_file():
+            continue
+        if file_path.name.startswith("~"):
             continue
         if file_path.suffix in VALID_EXT:
             topics = parse_bfr(file_path)
-            documents.append(build_documents(topics))
+            documents.extend(build_documents(topics))
+        #print(f"{file_path}<===========")
     return documents
 
 
-#print(get_synonim("Описание процесса «as is»"))
-#print(get_synonim("Описание процесса «to be»"))
-print(get_synonim("Термин/ определение"))
+if __name__ == "__main__":
+    #print(get_synonim("Описание процесса «as is»"))
+    #print(get_synonim("Описание процесса «to be»"))
+    #print(get_synonim("Термин/ определение"))
 
-documents = build_documents_from_folder(Path("./data"))
-pprint.pprint(documents, indent=2)
+    documents = load_documents(Path("./data/bfts"))
+    pprint.pprint(documents, indent=2)

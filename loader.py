@@ -95,9 +95,9 @@ if __name__ == "__main__":
     DOCUMENT_DIR = "data/notion"
     documents = load_documents(DOCUMENT_DIR)
     import pickle
-    with open(f'data/documents/docstore.pkl', 'wb') as file:
+    with open('data/documents/docstore.pkl', 'wb') as file:
         pickle.dump(documents, file)
-    with open(f'data/documents/docstore.pkl', 'rb') as file:
+    with open('data/documents/docstore.pkl', 'rb') as file:
         docs = pickle.load(file)
 
     print(f"Loaded {len(documents)} documents.")
