@@ -7,7 +7,7 @@ def test_vectorstore_retrieval():
     index = load_faiss_index(FAISS_INDEX_PATH)
     
     # Define your query for testing.
-    query_text = "какие жк у вас в продаже?"
+    query_text = "Зачем нужен признак госзакупки в карточке клиента и в ЛЗ?"
     print("Query:", query_text)
     
     # Run a similarity search on the vector store. k determines the number of results.
@@ -16,8 +16,11 @@ def test_vectorstore_retrieval():
     # Print the retrieved document contents.
     for i, doc in enumerate(results, 1):
         print(f"\nResult {i}:")
+        print(doc.metadata["source"])
         print(doc.page_content)
         print("-" * 80)
+
+#def test_rag_assistant()
 
 if __name__ == "__main__":
     test_vectorstore_retrieval()
