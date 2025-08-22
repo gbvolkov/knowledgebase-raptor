@@ -44,8 +44,10 @@ def embed_cluster_summarize_texts(texts: List[str], level: int) -> Tuple[pd.Data
     df_clusters = embed_cluster_texts(texts)
     expanded_list = []
     for index, row in df_clusters.iterrows():
-        for cluster in row["cluster"]:
-            expanded_list.append({"text": row["text"], "embd": row["embd"], "cluster": cluster})
+        expanded_list.extend(
+            {"text": row["text"], "embd": row["embd"], "cluster": cluster}
+            for cluster in row["cluster"]
+        )
     expanded_df = pd.DataFrame(expanded_list)
     all_clusters = expanded_df["cluster"].unique()
     print(f"--Generated {len(all_clusters)} clusters at level {level}--")
@@ -68,12 +70,11 @@ def recursive_embed_cluster_summarize(texts: List[str], level: int = 1, n_levels
     """
     Recursively builds the RAPTOR tree by embedding, clustering, and summarizing texts.
     """
-    results = {}
     df_clusters, df_summary = embed_cluster_summarize_texts(texts, level)
-    results[level] = (df_clusters, df_summary)
+    results = {level: (df_clusters, df_summary)}
     unique_clusters = df_summary["cluster"].nunique()
     if level < n_levels and unique_clusters > 1:
         new_texts = df_summary["summaries"].tolist()
         next_level_results = recursive_embed_cluster_summarize(new_texts, level + 1, n_levels)
-        results.update(next_level_results)
+        results |= next_level_results
     return results

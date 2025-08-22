@@ -1,4 +1,5 @@
 # ingestion/loader.py
+from json import JSONDecodeError
 import os
 from langchain.docstore.document import Document
 from langchain_community.document_loaders import (
@@ -8,7 +9,14 @@ from langchain_community.document_loaders import (
     UnstructuredPowerPointLoader,
     UnstructuredExcelLoader,
     UnstructuredImageLoader,
-    AssemblyAIAudioTranscriptLoader
+    AssemblyAIAudioTranscriptLoader,
+    UnstructuredCSVLoader,
+    UnstructuredHTMLLoader,
+    UnstructuredXMLLoader,
+    UnstructuredRTFLoader,
+    UnstructuredMarkdownLoader,
+    UnstructuredEmailLoader,
+    JSONLoader,
 )
 from pydub import AudioSegment
 import config
@@ -48,8 +56,11 @@ def load_documents(directory_path: str) -> list[Document]:
             ext = os.path.splitext(filename)[1].lower()
             try:
                 # Choose the loader based on file extension
-                if ext in ['.txt', '.md', '.py']:
+                #if ext in ['.txt', '.md', '.py']:
+                if ext in ['.txt', '.py']:
                     loader = TextLoader(full_path, encoding="utf8")
+                elif ext == '.json':
+                    loader = JSONLoader(full_path, jq_schema=".", text_content=False)
                 elif ext == '.pdf':
                     loader = UnstructuredPDFLoader(full_path)
                 elif ext in ['.docx', '.doc']:
@@ -60,8 +71,20 @@ def load_documents(directory_path: str) -> list[Document]:
                 elif ext in ['.xlsx', '.xls']:
                     # Excel loader: returns a single Document by default
                     loader = UnstructuredExcelLoader(full_path, mode="single")
+                elif ext in ['.csv']:
+                    loader = UnstructuredCSVLoader(full_path, mode="single")
+                elif ext in ['.html']:
+                    loader = UnstructuredHTMLLoader(full_path, mode="single")
+                elif ext in ['.xml']:
+                    loader = UnstructuredXMLLoader(full_path, mode="single")
+                elif ext in ['.rtf']:
+                    loader = UnstructuredRTFLoader(full_path, mode="single")
+                elif ext in ['.md']:
+                    loader = UnstructuredMarkdownLoader(full_path, mode="single")
                 elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif']:
                     loader = UnstructuredImageLoader(full_path, mode="single")
+                elif ext in ['.msg', '.eml']:
+                    loader = UnstructuredEmailLoader(full_path)
                 elif ext in ['.mp4', '.mov', '.avi']:
                     wav_name = filename
                     name, ext = os.path.splitext(filename)
@@ -77,8 +100,23 @@ def load_documents(directory_path: str) -> list[Document]:
                 else:
                     print(f"Unsupported file type {ext} for file {filename}")
                     continue
-
-                docs = loader.load()
+                try:
+                    docs = loader.load()
+                except Exception as e:
+                    if not isinstance(loader, JSONLoader) or not isinstance(
+                        e, JSONDecodeError
+                    ):
+                        raise e
+                    from pathlib import Path
+                    src = Path(full_path)
+                    text = src.read_text(encoding="utf-8-sig")
+                    tmp = src.with_suffix(".nobom.json")
+                    tmp.write_text(text, encoding="utf-8")
+                    try:
+                        loader = JSONLoader(file_path=str(tmp), jq_schema=".", text_content=False)
+                        docs = loader.load()
+                    finally:
+                         tmp.unlink(missing_ok=True)
                 # Compute relative path from the base directory
                 rel_path = os.path.relpath(full_path, directory_path)
                 # Set metadata for each loaded document
@@ -92,12 +130,12 @@ def load_documents(directory_path: str) -> list[Document]:
 
 
 if __name__ == "__main__":
-    DOCUMENT_DIR = "data/notion"
+    DOCUMENT_DIR = "data/itil"
     documents = load_documents(DOCUMENT_DIR)
     import pickle
-    with open('data/documents/docstore.pkl', 'wb') as file:
+    with open('data/documents/itil_docstore.pkl', 'wb') as file:
         pickle.dump(documents, file)
-    with open('data/documents/docstore.pkl', 'rb') as file:
+    with open('data/documents/itil_docstore.pkl', 'rb') as file:
         docs = pickle.load(file)
 
     print(f"Loaded {len(documents)} documents.")

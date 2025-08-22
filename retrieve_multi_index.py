@@ -24,13 +24,11 @@ def load_image_index() -> FAISS:
         load_fn_kwargs={"device": "cpu"},
     )  # Embedder must match indexing settings :contentReference[oaicite:8]{index=8}
 
-    vectorstore = FAISS.load_local(
+    return FAISS.load_local(
         INDEX_DIR,
         clip_embedder,
         allow_dangerous_deserialization=True,
-    )  # Reloads FAISS index + metadata :contentReference[oaicite:9]{index=9}
-
-    return vectorstore
+    )
 
 def retrieve_similar_images(
     query: str,
@@ -72,6 +70,7 @@ def test_vectorstore_retrieval():
     results = query_faiss_index(index, query_text, k=5)
     
     # Print the retrieved document contents.
+# sourcery skip: no-loop-in-tests
     for i, doc in enumerate(results, 1):
         print(f"\nResult {i}:")
         print(doc.page_content)
