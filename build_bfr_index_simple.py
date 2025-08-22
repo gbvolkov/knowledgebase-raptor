@@ -8,7 +8,7 @@ from config import DOCUMENT_DIR, FAISS_INDEX_PATH
 import pickle
 
 DOCUMENT_DIR = "data/bfts"
-FAISS_INDEX_PATH = "index/bfts_index"
+FAISS_INDEX_PATH = "index/bft_index"
 def main():
     # Recursively load documents from the local test_data folder.
     print("Loading documents from:", DOCUMENT_DIR)

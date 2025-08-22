@@ -23,9 +23,7 @@ def display_image_base64(b64_string: str):
     # 2) Strip whitespace and newlines
     b64_string = "".join(b64_string.split())
 
-    # 3) Fix padding: length must be a multiple of 4
-    missing_padding = len(b64_string) % 4
-    if missing_padding:
+    if missing_padding := len(b64_string) % 4:
         b64_string += "=" * (4 - missing_padding)
 
     # 4) Decode and display

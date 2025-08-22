@@ -92,7 +92,7 @@ def parse_bfr(bfr_path: str)-> dict:
     b_title = True
     topics = {}
 
-    topics["ID"] = os.path.basename(bfr_path)
+    topics["ID"] = topics["source"] = os.path.basename(bfr_path)
     for doc in docs:
         content = doc.page_content.strip()
         if len(content) == 0:
@@ -267,6 +267,7 @@ def build_documents(document: dict) -> Document:
     metadata = {
         "type": "head",
         "id": document["ID"],
+        "source": document["source"],
         "title": title,
         "project": meta.get("project", ""),
     }
