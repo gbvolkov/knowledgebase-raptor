@@ -9,6 +9,8 @@ langchain-experimental
 open_clip_torch
 audioop-lts
 
+sentence-transformers
+
 langchain-huggingface
 langchain_openai
 
